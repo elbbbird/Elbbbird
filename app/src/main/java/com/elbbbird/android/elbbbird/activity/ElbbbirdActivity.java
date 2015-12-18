@@ -1,29 +1,57 @@
-package com.elbbbird.android.elbbbird;
+package com.elbbbird.android.elbbbird.activity;
 
-import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class ElbbbirdActivity extends AppCompatActivity
+import com.elbbbird.android.elbbbird.R;
+import com.elbbbird.android.elbbbird.adapter.ShotsPagerAdapter;
+import com.elbbbird.android.elbbbird.app.BaseActivity;
+import com.elbbbird.android.elbbbird.fragment.ShotsFragment;
+
+import java.util.ArrayList;
+
+import butterknife.Bind;
+
+public class ElbbbirdActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.fab)
+    FloatingActionButton fab;
+    @Bind(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @Bind(R.id.nav_view)
+    NavigationView navigation;
+    @Bind(R.id.tabs)
+    TabLayout tabs;
+    @Bind(R.id.pager_view)
+    ViewPager pager;
+
+    private ArrayList<String> titles = new ArrayList<>();
+    private ArrayList<Fragment> fragments = new ArrayList<>();
+    private ShotsPagerAdapter adapter;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void setContentView() {
         setContentView(R.layout.activity_elbbbird);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    }
+
+    @Override
+    public void init() {
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -32,19 +60,27 @@ public class ElbbbirdActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigation.setNavigationItemSelectedListener(this);
+
+
+        titles.add(getResources().getString(R.string.popular));
+        titles.add(getResources().getString(R.string.recent));
+        fragments.add(ShotsFragment.newInstance(0));
+        fragments.add(ShotsFragment.newInstance(1));
+        adapter = new ShotsPagerAdapter(getSupportFragmentManager(), fragments, titles);
+        pager.setOffscreenPageLimit(2); //初始化缓存page数量
+        pager.setAdapter(adapter);
+        tabs.setupWithViewPager(pager);
+        tabs.setTabsFromPagerAdapter(adapter);
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -94,7 +130,6 @@ public class ElbbbirdActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
